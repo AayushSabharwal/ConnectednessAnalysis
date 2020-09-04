@@ -12,16 +12,25 @@ class PlotData:
         self.avg_deg = []
 
 
+# colour of points in the graph, in RGBA. Making points transparent allows to see stacked points, and the density of
+# points in a region
+point_colour = (0.2, 0.6, 0.1, 0.5)
+# number of nodes in the graph
 number_nodes = 1000
-data = []
+
+data = []   # to store data after adding each edge
 g = nx.Graph()
 g.add_nodes_from(list(range(number_nodes)))
-max_deg = 0
+max_deg = 0 # the maximum average degree of a component, used to properly set y axis limits while making plot
 
 
 def sample_plot():
-    components = nx.connected_components(g)
-    data.append(PlotData())
+    """
+    Function to sample the data of the graph, and add it to the data list
+    :returns maximum average degree of any component at this step
+    """
+    components = nx.connected_components(g)     # get the connected components
+    data.append(PlotData())     # add a plot data to the list
     curr_max_deg = 0
     for component in components:
         data[-1].n_comp += 1
@@ -37,14 +46,15 @@ def sample_plot():
 
 
 while not nx.is_connected(g):
-    max_deg = max(max_deg, sample_plot())
-    edge = random.choices(list(g.nodes()), k=2)
-    g.add_edge(edge[0], edge[1])
+    max_deg = max(max_deg, sample_plot())   # sample the graph and update maximum average degree
+    edge = random.choices(list(g.nodes()), k=2)     # choose a random edge
+    g.add_edge(edge[0], edge[1])    # add the random edge
 
-sample_plot()
+sample_plot()   # sample graph after it is connected
 
-x = data[-1].sizes
-y = data[-1].avg_deg
+# plotting
+x = data[0].sizes
+y = data[0].avg_deg
 plt.subplots_adjust(left=0.25, bottom=0.25)
 fig, ax = plt.subplots()
 plt.subplots_adjust(left=0.125, bottom=0.157, right=0.9, top=0.95, wspace=0.2, hspace=0.2)
@@ -54,7 +64,7 @@ plt.ylim(0, max_deg)
 plt.xlabel("Size of component")
 plt.ylabel("Average degree of nodes")
 
-p = plt.scatter(x, y, color=(0.2, 0.6, 0.1, 0.5))
+p = plt.scatter(x, y, color=point_colour)
 ax.margins(x=0)
 axis = plt.axes([0.15, 0.02, 0.7, 0.03])
 slide = Slider(axis, '# Edges', 0, len(data)-1, valinit=0, valstep=1)
